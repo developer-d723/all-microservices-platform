@@ -22,7 +22,7 @@ public class EmailService {
         switch (event.getEventType()) {
             case USER_CREATED:
                 subject = "Добро пожаловать!";
-                text = "Здравствуйте! Ваш аккаунт был успешно создан.";
+                text = "Здравствуйте! Ваш аккаунт на сайте ваш сайт был успешно создан.";
                 break;
             case USER_DELETED:
                 subject = "Ваш аккаунт удален";
@@ -38,7 +38,7 @@ public class EmailService {
     public void sendDirectEmail(String to, String subject, String text) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("noreply@mysupersite.com");
+            message.setFrom("noreply@mysite.com");
             message.setTo(to);
             message.setSubject(subject);
             message.setText(text);
