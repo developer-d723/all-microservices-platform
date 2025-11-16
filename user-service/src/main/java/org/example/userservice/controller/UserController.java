@@ -1,5 +1,6 @@
 package org.example.userservice.controller;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -12,11 +13,13 @@ import org.example.userservice.dto.CreateUserRequestDto;
 import org.example.userservice.dto.UpdateUserRequestDto;
 import org.example.userservice.dto.UserResponseDto;
 import org.example.userservice.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,6 +34,21 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class UserController {
 
     private final UserService userService;
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+
+    @GetMapping("/test-circuit-breaker")
+    @CircuitBreaker(name = "dummyService", fallbackMethod = "fallbackMethod")
+    public String testCircuitBreaker() {
+        return restTemplate.getForObject("http://NON-EXISTENT-SERVICE/dummy", String.class);
+    }
+
+    public String fallbackMethod(Throwable t) {
+        return "Fallback response: Service is down. Message: " + t.getMessage();
+    }
+
 
     @Operation(summary = "Получить пользователя по ID", description = "Возвращает информацию о конкретном пользователе по его ID")
     @ApiResponses(value = {
