@@ -63,6 +63,7 @@ services:
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - SPRING_DATASOURCE_USERNAME=myuser
       - SPRING_DATASOURCE_PASSWORD=mypassword
+#      - SPRING_MVC_PATHMATCH_MATCHING_STRATEGY=ant_path_matcher
 
   notification-service:
     build:
