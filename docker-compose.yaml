@@ -47,37 +47,42 @@ services:
 
 
   user-service:
-
-    build:
-      context: .
-      dockerfile: user-service/Dockerfile
+    build: { context: ., dockerfile: user-service/Dockerfile }
     container_name: user-service
-    depends_on:
-      - postgres
-      - kafka
-    ports:
-      - "8080:8080"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/user_db
-      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - SPRING_DATASOURCE_USERNAME=myuser
-      - SPRING_DATASOURCE_PASSWORD=mypassword
-      - SPRING_MVC_PATHMATCH_MATCHING_STRATEGY=ant_path_matcher
+      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
+    depends_on: [postgres, kafka, discovery-service, config-server]
 
   notification-service:
-    build:
-      context: .
-      dockerfile: notification-service/Dockerfile
+    build: { context: ., dockerfile: notification-service/Dockerfile }
     container_name: notification-service
-    depends_on:
-      - kafka
-      - mailhog
-    ports:
-      - "8081:8081"
     environment:
-      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - SPRING_MAIL_HOST=mailhog
-      - SPRING_MAIL_PORT=1025
+      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
+    depends_on: [kafka, mailhog, discovery-service, config-server]
+
+
+
+  config-server:
+    build: { context: ., dockerfile: config-server/Dockerfile }
+    container_name: config-server
+    ports: ["8888:8888"]
+    volumes:
+      - ./config-server/src/main/resources/config-repo:/config-repo
+
+  discovery-service:
+    build: { context: ., dockerfile: discovery-service/Dockerfile }
+    container_name: discovery-service
+    ports: ["8761:8761"]
+
+  gateway-service:
+    build: { context: ., dockerfile: gateway-service/Dockerfile }
+    container_name: gateway-service
+    ports: ["8080:8080"]
+    environment:
+      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
+    depends_on: [discovery-service, config-server]
+
+
 
 volumes:
   pgdata:
